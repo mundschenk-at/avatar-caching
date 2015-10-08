@@ -22,12 +22,12 @@
  *
  */
 
-/* Kein Input? */
+/* No input? */
 if (empty ( $_GET ['file'] )) {
 	exit ();
 }
 
-/* Hash extrahieren */
+/* Extract hash */
 $hash = basename ( $_GET ['file'], '.png' );
 $size = 64;
 $fb_id = '';
@@ -35,7 +35,7 @@ $matches = array ();
 $gravatar = '';
 $cache_filename = '';
 
-/* Richtiges Format? */
+/* Right format? */
 if (! preg_match ( '#^([a-f0-9]{32})-([0-9]+)x\2$#i', $hash, $matches )) {
 	if (! preg_match ( '#^facebook-([0-9]+)-([0-9]+)x\2$#i', $hash, $matches )) {
 		exit ();
@@ -50,31 +50,34 @@ if (! preg_match ( '#^([a-f0-9]{32})-([0-9]+)x\2$#i', $hash, $matches )) {
 
 /* Gravatar */
 if (empty ( $fb_id )) {
+	
 	$gravatar = sprintf ( 'https://secure.gravatar.com/avatar/%s.png?s=%d&d=404', $hash, $size );
 	
 	$cache_filename = $hash;
-} else {
+	
+} else { /* Facebook profile pictures */ 
 	
 	$gravatar = sprintf ( 'https://graph.facebook.com/%s/picture?type=square&width=%d&height=%d', $fb_id, $size, $size );
 	
 	$cache_filename = 'facebook-' . $fb_id;
 }
 
-/* Filename */
+/* filename */
 $filename = dirname ( $_SERVER ['SCRIPT_FILENAME'] );
 
-/* Cachefile */
+/* cache file */
 $cache = sprintf ( '%s/cache/%s-%dx%d.png', $filename, $cache_filename, $size, $size );
 
-/* Gravatar holen */
+/* Fetch gravatar/Facebook profile picture */
 $source = @file_get_contents ( $gravatar );
 
-/* Default */
 if (! $source) {
+	/* default */
 	$source = @file_get_contents ( sprintf ( '%s/default.png', $filename ) );
 	
-	/* Optimieren */
 } else {
+	/* optimize */
+	
 	$ysmush = json_decode ( @file_get_contents ( sprintf ( 'http://ws1.adq.ac4.yahoo.com/ysmush.it/ws.php?img=%s', urlencode ( $gravatar ) ) ) );
 	
 	if ($ysmush && ! empty ( $ysmush->dest )) {
@@ -82,20 +85,20 @@ if (! $source) {
 	}
 }
 
-/* Speichern */
+/* Save optimized image */
 $response = @file_put_contents ( $cache, $source );
 
-/* Fehlerhaft? */
+/* Any errors? */
 if (! $response) {
 	exit ();
 }
 
-/* Header senden */
+/* Let's set some HTTP headers */
 header ( 'Content-Type: image/png' );
 header ( 'Content-Length: ' . $response );
 header ( 'Expires: ' . gmdate ( 'D, d M Y H:i:s \G\M\T', time () + (60 * 60 * 24) ) ); // 24 hours
 
-/* Ausgabe */
+/* Done. */
 echo $source;
 
 ?>

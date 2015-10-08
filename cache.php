@@ -54,13 +54,15 @@ if ( ! preg_match( '#^([a-f0-9]{32})-([0-9]+)x\2$#i', $hash, $matches ) ) {
 /* Gravatar */
 if ( empty( $fb_id ) ) {
 	
-	$gravatar = sprintf( 'https://secure.gravatar.com/avatar/%s.png?s=%d&d=404', $hash, $size );
+	$gravatar = sprintf( 'https://secure.gravatar.com/avatar/%s.png?s=%d', $hash, $size );
 	
 	$cache_filename = $hash;
 	
 	/* Add some default magic */
 	if ( ! empty( $_GET['d'] ) ) {
-		$gravatar .= '?d=' . $_GET['d'];
+ 		$gravatar .= '&d=' . $_GET['d'];
+	} else {
+		$gravatar .= '&d=404';
 	}
 } else { /* Facebook profile pictures */
 	

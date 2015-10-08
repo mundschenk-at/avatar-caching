@@ -57,6 +57,11 @@ if ( empty( $fb_id ) ) {
 	$gravatar = sprintf( 'https://secure.gravatar.com/avatar/%s.png?s=%d&d=404', $hash, $size );
 	
 	$cache_filename = $hash;
+	
+	/* Add some default magic */
+	if ( ! empty( $_GET['d'] ) ) {
+		$gravatar .= '?d=' . $_GET['d'];
+	}
 } else { /* Facebook profile pictures */
 	
 	$gravatar = sprintf( 'https://graph.facebook.com/%s/picture?type=square&width=%d&height=%d', $fb_id, $size, $size );

@@ -27,6 +27,9 @@ if ( empty( $_GET['file'] ) ) {
 	exit();
 }
 
+/* Base directory */
+$basedir = dirname( $_SERVER['SCRIPT_FILENAME'] );
+
 /* Extract hash */
 $hash = basename( $_GET['file'], '.png' );
 $size = 64;
@@ -61,18 +64,15 @@ if ( empty( $fb_id ) ) {
 	$cache_filename = 'facebook-' . $fb_id;
 }
 
-/* filename */
-$filename = dirname( $_SERVER['SCRIPT_FILENAME'] );
-
 /* cache file */
-$cache = sprintf( '%s/cache/%s-%dx%d.png', $filename, $cache_filename, $size, $size );
+$cache = sprintf( '%s/cache/%s-%dx%d.png', $basedir, $cache_filename, $size, $size );
 
 /* Fetch gravatar/Facebook profile picture */
 $source = @file_get_contents( $gravatar );
 
 if ( ! $source ) {
 	/* default */
-	$source = @file_get_contents( sprintf( '%s/default.png', $filename ) );
+	$source = @file_get_contents( sprintf( '%s/default.png', $basedir ) );
 } else {
 	/* optimize */
 	

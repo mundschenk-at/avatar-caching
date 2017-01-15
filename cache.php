@@ -1,12 +1,12 @@
 <?php
 
 /**
- *  
+ *
  * User profile caching based on original work by Sergej Müller http://web.archive.org/web/20130804041932/http://playground.ebiene.de/wordpress-gravatar-cache
- * 
+ *
+ * Copyright (c) 2013-2017 Peter Putzer
  * Copyright (c) 2012 Sergej Müller
- * Copyright (c) 2013-2015 Peter Putzer
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,11 +31,10 @@ if ( empty( $_GET['file'] ) ) {
 $basedir = dirname( $_SERVER['SCRIPT_FILENAME'] );
 
 /* Extract hash */
-$hash = basename( $_GET['file'], '.png' );
-$size = 64;
-$fb_id = '';
-$matches = array();
-$gravatar = '';
+$hash           = basename( $_GET['file'], '.png' );
+$size           = 64;
+$fb_id          = '';
+$gravatar       = '';
 $cache_filename = '';
 
 /* Right format? */
@@ -43,21 +42,19 @@ if ( ! preg_match( '#^([a-f0-9]{32})-([0-9]+)x\2$#i', $hash, $matches ) ) {
 	if ( ! preg_match( '#^facebook-([0-9]+)-([0-9]+)x\2$#i', $hash, $matches ) ) {
 		exit();
 	} else {
-		$fb_id = isset( $matches[1] ) ? $matches[1] : $fb_id;
-		$size = isset( $matches[2] ) ? $matches[2] : $size;
+		$fb_id = $matches[1] ?: $fb_id;
+		$size  = $matches[2] ?: $size;
 	}
 } else {
-	$hash = isset( $matches[1] ) ? $matches[1] : $hash;
-	$size = isset( $matches[2] ) ? $matches[2] : $size;
+	$hash = $matches[1] ?: $hash;
+	$size = $matches[2] ?: $size;
 }
 
 /* Gravatar */
 if ( empty( $fb_id ) ) {
-	
-	$gravatar = sprintf( 'https://secure.gravatar.com/avatar/%s.png?s=%d', $hash, $size );
-	
+	$gravatar       = sprintf( 'https://secure.gravatar.com/avatar/%s.png?s=%d', $hash, $size );
 	$cache_filename = $hash;
-	
+
 	/* Add some default magic */
 	if ( ! empty( $_GET['d'] ) ) {
  		$gravatar .= '&d=' . $_GET['d'];
@@ -65,9 +62,7 @@ if ( empty( $fb_id ) ) {
 		$gravatar .= '&d=404';
 	}
 } else { /* Facebook profile pictures */
-	
-	$gravatar = sprintf( 'https://graph.facebook.com/%s/picture?type=square&width=%d&height=%d', $fb_id, $size, $size );
-	
+	$gravatar       = sprintf( 'https://graph.facebook.com/%s/picture?type=square&width=%d&height=%d', $fb_id, $size, $size );
 	$cache_filename = 'facebook-' . $fb_id;
 }
 
@@ -82,12 +77,12 @@ if ( ! $source ) {
 	$source = @file_get_contents( sprintf( '%s/default.png', $basedir ) );
 } else {
 	/* optimize */
-	
-	$ysmush = json_decode( 
-		@file_get_contents( 
+
+	$ysmush = json_decode(
+		@file_get_contents(
 			sprintf( 'http://ws1.adq.ac4.yahoo.com/ysmush.it/ws.php?img=%s', urlencode( $gravatar ) ) ) );
-	
-	if ( $ysmush && ! empty( $ysmush->dest ) ) {
+
+	if ( ! empty( $ysmush ) && ! empty( $ysmush->dest ) ) {
 		$source = @file_get_contents( urldecode( $ysmush->dest ) );
 	}
 }
@@ -107,5 +102,3 @@ header( 'Expires: ' . gmdate( 'D, d M Y H:i:s \G\M\T', time() + ( 60 * 60 * 24 )
 
 /* Done. */
 echo $source;
-
-?>
